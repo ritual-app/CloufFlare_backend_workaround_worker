@@ -9,6 +9,13 @@
 	"compatibility_date": "2025-06-20",
 	"observability": {
 		"enabled": true
+	},
+	"env": {
+		"production": {
+			"routes": [
+				{ "pattern": "ritualx.ritual-app.co/backend/*", "zone_name": "ritual-app.co" }
+			]
+		}
 	}
 	/**
 	 * Smart Placement

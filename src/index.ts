@@ -86,20 +86,26 @@ async function getHealthStatus(env: Env, request: Request) {
   const isRoutingEnabled = env?.ROUTING_ENABLED !== "false";
   const canaryPercent = parseInt(env?.CANARY_PERCENT || "0");
 
-  // Test backend connectivity
+  // Test backend connectivity (determine backend based on worker environment)
   let backendHealthy = false;
   let backendResponseTime = 0;
   
+  // Determine backend URL based on request hostname or environment
+  const requestUrl = new URL(request.url);
+  const backendDomain = requestUrl.hostname.includes('-dev') ? 
+    'management-dev.ritual-app.co' : 
+    'management.ritual-app.co';
+  
   try {
     const backendStart = Date.now();
-    const backendResponse = await fetch('https://management-dev.ritual-app.co/health_check', {
+    const backendResponse = await fetch(`https://${backendDomain}/health_check`, {
       method: 'HEAD',
       headers: { 'User-Agent': 'RoutingWorker-HealthCheck/1.0' }
     });
     backendResponseTime = Date.now() - backendStart;
     backendHealthy = backendResponse.ok;
   } catch (error) {
-    console.error('Backend health check failed:', error);
+    console.error(`Backend health check failed for ${backendDomain}:`, error);
   }
 
   const responseTime = Date.now() - startTime;
@@ -156,9 +162,10 @@ export default {
       }
     }
 
-    // Only handle requests for our target domain
+    // Only handle requests for our target domains
     // All other domains pass through unchanged
-    if (url.hostname !== "ritualx-dev.ritual-app.co") {
+    const targetDomains = ["ritualx-dev.ritual-app.co", "ritualx.ritual-app.co"];
+    if (!targetDomains.includes(url.hostname)) {
       return fetch(request);
     }
 
@@ -184,9 +191,12 @@ export default {
         return fetch(request);
       }
 
-      // Transform URL: Remove /backend prefix and route to management-dev
+      // Transform URL: Remove /backend prefix and route to appropriate backend
       let newPath = url.pathname.replace(/^\/backend/, "") || "/";
-      const newUrl = `https://management-dev.ritual-app.co${newPath}${url.search}`;
+      const backendDomain = url.hostname.includes('-dev') ? 
+        'management-dev.ritual-app.co' : 
+        'management.ritual-app.co';
+      const newUrl = `https://${backendDomain}${newPath}${url.search}`;
 
       try {
         // Proxy the request with performance monitoring
