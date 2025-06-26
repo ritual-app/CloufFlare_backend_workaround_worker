@@ -172,3 +172,7 @@ dist
 .wrangler/
 
 CLAUDE.md
+wrangler.toml
+
+# AI Documentation
+.ai_docs/
