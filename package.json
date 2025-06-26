@@ -4,10 +4,15 @@
 	"private": true,
 	"scripts": {
 		"deploy": "wrangler deploy",
+		"deploy:prod": "wrangler deploy --env production",
 		"dev": "wrangler dev",
 		"start": "wrangler dev",
 		"test": "vitest",
-		"cf-typegen": "wrangler types"
+		"cf-typegen": "wrangler types",
+		"canary:0": "echo '0' | wrangler secret put CANARY_PERCENT --env=''",
+		"canary:50": "echo '50' | wrangler secret put CANARY_PERCENT --env=''",
+		"canary:100": "echo '100' | wrangler secret put CANARY_PERCENT --env=''",
+		"canary:test": "./test-canary.sh"
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.8.19",

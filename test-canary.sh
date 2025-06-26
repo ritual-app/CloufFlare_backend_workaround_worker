@@ -62,20 +62,33 @@ echo "Environment variables:"
 CLOUDFLARE_ACCOUNT_ID=19c2ad706ef9998b3c6d9a2acc68a1fd wrangler secret list 2>/dev/null || echo "Unable to fetch (wrangler not available)"
 echo ""
 
-# Interpretation
-echo "=== INTERPRETATION ==="
-if [ $django_percent -ge 45 ] && [ $django_percent -le 55 ]; then
-  echo "✅ CANARY ~50%: Distribution looks correct for 50% canary"
-elif [ $django_percent -le 10 ]; then
-  echo "✅ CANARY ~0%: Most traffic passing through (low/no routing)"
-elif [ $django_percent -ge 90 ]; then
-  echo "✅ CANARY ~100%: Most traffic routing to Django backend"
-else
-  echo "⚠️  CANARY $django_percent%: Verify if this matches your expected CANARY_PERCENT setting"
-fi
+# Get expected canary from health endpoint
+echo "=== PASS/FAIL ANALYSIS ==="
+expected_canary=$(curl -s https://ritualx-dev.ritual-app.co/worker-health | grep -o '"canary_percent":[0-9]*' | cut -d: -f2 2>/dev/null || echo "unknown")
 
-echo ""
-echo "Expected behavior:"
-echo "- CANARY_PERCENT=0:   ~0% Django, ~100% Frontend"
-echo "- CANARY_PERCENT=50:  ~50% Django, ~50% Frontend"  
-echo "- CANARY_PERCENT=100: ~100% Django, ~0% Frontend"
+if [ "$expected_canary" != "unknown" ]; then
+  echo "Expected CANARY_PERCENT: $expected_canary%"
+  echo "Actual Django routing: $django_percent%"
+  
+  # Allow ±15% tolerance for randomness
+  tolerance=15
+  lower_bound=$((expected_canary - tolerance))
+  upper_bound=$((expected_canary + tolerance))
+  
+  if [ $django_percent -ge $lower_bound ] && [ $django_percent -le $upper_bound ]; then
+    echo ""
+    echo "🎯 PASS: Canary distribution within expected range ($lower_bound%-$upper_bound%)"
+    exit 0
+  else
+    echo ""
+    echo "❌ FAIL: Canary distribution outside expected range ($lower_bound%-$upper_bound%)"
+    exit 1
+  fi
+else
+  echo "⚠️  Cannot determine expected canary percentage from health endpoint"
+  echo ""
+  echo "Manual verification:"
+  echo "- CANARY_PERCENT=0:   Expected ~0-15% Django"
+  echo "- CANARY_PERCENT=50:  Expected ~35-65% Django"  
+  echo "- CANARY_PERCENT=100: Expected ~85-100% Django"
+fi
