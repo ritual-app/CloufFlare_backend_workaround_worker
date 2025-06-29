@@ -175,4 +175,4 @@ CLAUDE.md
 wrangler.toml
 
 # AI Documentation
-.ai_docs/
+.ai_docs/.gemini_docs
