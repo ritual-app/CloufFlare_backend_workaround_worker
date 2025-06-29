@@ -10,20 +10,36 @@
 	"observability": {
 		"enabled": true
 	},
-	"routes": [
-		{ "pattern": "ritualx-dev.ritual-app.co/backend/*", "zone_name": "ritual-app.co" }
-	],
-	"vars": {
-		"ENVIRONMENT": "dev"
-	},
 	"env": {
+		"dev": {
+			"routes": [
+				{ "pattern": "ritualx-dev.ritual-app.co/backend/*", "zone_name": "ritual-app.co" },
+				{ "pattern": "ritualx-dev.ritual-app.co/worker-health", "zone_name": "ritual-app.co" }
+			],
+			"vars": {
+				"ENVIRONMENT": "dev"
+			},
+			"analytics_engine_datasets": [
+				{
+					"binding": "ANALYTICS",
+					"dataset": "routing_metrics_dev"
+				}
+			]
+		},
 		"production": {
 			"routes": [
-				{ "pattern": "ritualx.ritual-app.co/backend/*", "zone_name": "ritual-app.co" }
+				{ "pattern": "ritualx.ritual-app.co/backend/*", "zone_name": "ritual-app.co" },
+				{ "pattern": "ritualx.ritual-app.co/worker-health", "zone_name": "ritual-app.co" }
 			],
 			"vars": {
 				"ENVIRONMENT": "prod"
-			}
+			},
+			"analytics_engine_datasets": [
+				{
+					"binding": "ANALYTICS",
+					"dataset": "routing_metrics_prod"
+				}
+			]
 		}
 	}
 	/**

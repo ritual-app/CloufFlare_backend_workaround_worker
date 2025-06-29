@@ -3,15 +3,16 @@
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
-		"deploy": "wrangler deploy",
+		"deploy": "wrangler deploy --env dev",
+		"deploy:dev": "wrangler deploy --env dev",
 		"deploy:prod": "wrangler deploy --env production",
 		"dev": "wrangler dev",
 		"start": "wrangler dev",
 		"test": "vitest",
 		"cf-typegen": "wrangler types",
-		"canary:0": "echo '0' | wrangler secret put CANARY_PERCENT --env=''",
-		"canary:50": "echo '50' | wrangler secret put CANARY_PERCENT --env=''",
-		"canary:100": "echo '100' | wrangler secret put CANARY_PERCENT --env=''",
+		"canary:0": "echo '0' | wrangler secret put CANARY_PERCENT --env dev",
+		"canary:50": "echo '50' | wrangler secret put CANARY_PERCENT --env dev",
+		"canary:100": "echo '100' | wrangler secret put CANARY_PERCENT --env dev",
 		"canary:test": "./test-canary.sh"
 	},
 	"devDependencies": {
