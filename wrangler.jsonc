@@ -10,11 +10,20 @@
 	"observability": {
 		"enabled": true
 	},
+	"routes": [
+		{ "pattern": "ritualx-dev.ritual-app.co/backend/*", "zone_name": "ritual-app.co" }
+	],
+	"vars": {
+		"ENVIRONMENT": "dev"
+	},
 	"env": {
 		"production": {
 			"routes": [
 				{ "pattern": "ritualx.ritual-app.co/backend/*", "zone_name": "ritual-app.co" }
-			]
+			],
+			"vars": {
+				"ENVIRONMENT": "prod"
+			}
 		}
 	}
 	/**

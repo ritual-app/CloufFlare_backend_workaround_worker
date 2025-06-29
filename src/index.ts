@@ -29,6 +29,7 @@
 interface Env {
   ROUTING_ENABLED?: string;
   CANARY_PERCENT?: string;
+  ENVIRONMENT?: string;
   ANALYTICS?: AnalyticsEngineDataset;
 }
 
@@ -86,15 +87,13 @@ async function getHealthStatus(env: Env, request: Request) {
   const isRoutingEnabled = env?.ROUTING_ENABLED !== "false";
   const canaryPercent = parseInt(env?.CANARY_PERCENT || "0");
 
-  // Test backend connectivity (determine backend based on worker environment)
+  // Test backend connectivity using environment-appropriate backend
   let backendHealthy = false;
   let backendResponseTime = 0;
   
-  // Determine backend URL based on request hostname or environment
-  const requestUrl = new URL(request.url);
-  const backendDomain = requestUrl.hostname.includes('-dev') ? 
-    'management-dev.ritual-app.co' : 
-    'management.ritual-app.co';
+  // Determine backend domain based on environment
+  const isProd = env.ENVIRONMENT === "prod";
+  const backendDomain = isProd ? 'management.ritual-app.co' : 'management-dev.ritual-app.co';
   
   try {
     const backendStart = Date.now();
@@ -112,6 +111,7 @@ async function getHealthStatus(env: Env, request: Request) {
   
   const healthData = {
     status: "healthy",
+    environment: env.ENVIRONMENT || "dev",
     routing_enabled: isRoutingEnabled,
     canary_percent: canaryPercent,
     backend_healthy: backendHealthy,
@@ -162,10 +162,11 @@ export default {
       }
     }
 
-    // Only handle requests for our target domains
+    // Only handle requests for our target domain (dynamic based on environment)
     // All other domains pass through unchanged
-    const targetDomains = ["ritualx-dev.ritual-app.co", "ritualx.ritual-app.co"];
-    if (!targetDomains.includes(url.hostname)) {
+    const isProd = env.ENVIRONMENT === "prod";
+    const targetDomain = isProd ? "ritualx.ritual-app.co" : "ritualx-dev.ritual-app.co";
+    if (url.hostname !== targetDomain) {
       return fetch(request);
     }
 
@@ -193,9 +194,7 @@ export default {
 
       // Transform URL: Remove /backend prefix and route to appropriate backend
       let newPath = url.pathname.replace(/^\/backend/, "") || "/";
-      const backendDomain = url.hostname.includes('-dev') ? 
-        'management-dev.ritual-app.co' : 
-        'management.ritual-app.co';
+      const backendDomain = isProd ? 'management.ritual-app.co' : 'management-dev.ritual-app.co';
       const newUrl = `https://${backendDomain}${newPath}${url.search}`;
 
       try {
