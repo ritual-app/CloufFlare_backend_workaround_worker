@@ -47,6 +47,24 @@ interface RoutingMetrics {
   user_agent?: string;
   cf_ray?: string;
   cf_country?: string;
+  client_ip?: string;
+  referer?: string;
+  cf_colo?: string;
+  cf_asn?: string;
+  route_category?: string;
+  request_id?: string;
+}
+
+/**
+ * Categorize route for better dashboard organization
+ */
+function categorizeRoute(path: string): string {
+  if (path.startsWith('/backend/v1/experts')) return 'experts-api';
+  if (path.startsWith('/backend/v1/')) return 'api-v1';
+  if (path.startsWith('/backend/health')) return 'health-check';
+  if (path.startsWith('/backend/')) return 'backend-other';
+  if (path === '/worker-health') return 'worker-health';
+  return 'frontend';
 }
 
 /**
@@ -56,19 +74,27 @@ async function logMetrics(env: Env, request: Request, metrics: Partial<RoutingMe
   if (!env.ANALYTICS) return;
   
   const cf = request.cf as any;
+  const url = new URL(request.url);
   const timestamp = new Date().toISOString();
   
   const fullMetrics: RoutingMetrics = {
     timestamp,
     event_type: 'routing_decision',
-    path: new URL(request.url).pathname,
+    path: url.pathname,
     method: request.method,
     routing_enabled: env?.ROUTING_ENABLED !== "false",
     canary_percent: parseInt(env?.CANARY_PERCENT || "100"),
     routed: false,
+    // Enhanced source tracking
     user_agent: request.headers.get('user-agent') || 'unknown',
     cf_ray: request.headers.get('cf-ray') || 'unknown',
     cf_country: cf?.country || 'unknown',
+    client_ip: request.headers.get('cf-connecting-ip') || 'unknown',
+    referer: request.headers.get('referer') || 'direct',
+    cf_colo: cf?.colo || 'unknown',
+    cf_asn: cf?.asn || 'unknown',
+    route_category: categorizeRoute(url.pathname),
+    request_id: crypto.randomUUID(),
     ...metrics
   };
 
@@ -189,6 +215,9 @@ export default {
           routed: false,
           response_status: 200
         });
+
+        // Log pass-through decision
+        console.log(`PASSTHROUGH: ${request.headers.get('cf-ray')} | ${request.headers.get('cf-connecting-ip')} | ${new URL(request.url).pathname} → FRONTEND | ${request.headers.get('cf-country')}`);
         return fetch(request);
       }
 
@@ -215,6 +244,9 @@ export default {
           response_time_ms: responseTime
         });
 
+        // Enhanced console logging for Cloudflare Logs
+        console.log(`ROUTING: ${request.headers.get('cf-ray')} | ${request.headers.get('cf-connecting-ip')} | ${new URL(request.url).pathname} → BACKEND | ${response.status} | ${responseTime}ms | ${request.headers.get('cf-country')}`);
+
         return response;
       } catch (error) {
         // Network failure fallback with error logging
@@ -227,6 +259,9 @@ export default {
           error_message: errorMessage,
           response_time_ms: Date.now() - startTime
         });
+
+        // Log fallback decision
+        console.log(`FALLBACK: ${request.headers.get('cf-ray')} | ${request.headers.get('cf-connecting-ip')} | ${new URL(request.url).pathname} → FRONTEND | ERROR: ${errorMessage}`);
 
         return fetch(request);
       }

@@ -169,6 +169,53 @@ WHERE event_type = 'error'
   AND timestamp > now() - INTERVAL '1' HOUR;
 ```
 
+## Cloudflare Alerts → Slack Integration
+
+### Setup Instructions
+1. **Go to Cloudflare Dashboard** → Notifications → Create
+2. **Select Alert Types** (configure all below)
+3. **Add Slack Webhook** → Connect your Slack workspace
+
+### Critical Alerts to Configure
+
+**1. Worker Health Alert**
+- **Type**: Custom Event → Analytics Engine Query
+- **Query**: 
+  ```sql
+  SELECT COUNT(*) as errors FROM routing_metrics_dev 
+  WHERE event_type = 'error' AND timestamp > now() - INTERVAL '5' MINUTE
+  ```
+- **Threshold**: `errors > 5` 
+- **Slack Message**: `🚨 CRITICAL: routing-backend-dev worker errors detected`
+
+**2. Backend Failure Alert**  
+- **Type**: Custom Event → Analytics Engine Query
+- **Query**:
+  ```sql
+  SELECT COUNT(*) as fallbacks FROM routing_metrics_dev 
+  WHERE event_type = 'fallback' AND timestamp > now() - INTERVAL '5' MINUTE
+  ```
+- **Threshold**: `fallbacks > 3`
+- **Slack Message**: `🔥 CRITICAL: Backend management-dev.ritual-app.co unreachable`
+
+**3. High Error Rate Alert**
+- **Type**: Custom Event → Analytics Engine Query  
+- **Query**:
+  ```sql
+  SELECT 
+    SUM(CASE WHEN response_status >= 500 THEN 1 ELSE 0 END) * 100.0 / COUNT(*) as error_rate
+  FROM routing_metrics_dev 
+  WHERE routed = true AND timestamp > now() - INTERVAL '5' MINUTE
+  ```
+- **Threshold**: `error_rate > 10`
+- **Slack Message**: `⚠️ HIGH: 5xx error rate above 10% in routing-backend-dev`
+
+**4. Worker Route Failure**
+- **Type**: Zone Alert → Workers → Script Error Rate
+- **Worker**: `routing-backend-dev`
+- **Threshold**: `> 5%` error rate in 5 minutes
+- **Slack Message**: `🚨 Worker routing-backend-dev script errors detected`
+
 ## Testing URLs
 - **Worker Health**: `https://ritualx-dev.ritual-app.co/worker-health` ✅ ACTIVE
 - **Backend Route**: `https://ritualx-dev.ritual-app.co/backend/health_check` ✅ ACTIVE  
