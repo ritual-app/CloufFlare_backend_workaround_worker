@@ -14,9 +14,19 @@ npm run cf-typegen   # Generate Cloudflare Worker types
 
 **Deployment**:
 ```bash
-wrangler deploy      # Deploy to Cloudflare Workers (dev environment)
-# Production deployment is commented out to prevent accidental deployments
+npm run deploy:dev   # Deploy to dev environment (routing-backend-dev)
+npm run deploy:prod  # Deploy to production (routing-backend)
+
+# Direct wrangler commands
+CLOUDFLARE_ACCOUNT_ID=19c2ad706ef9998b3c6d9a2acc68a1fd wrangler deploy --env dev
+CLOUDFLARE_ACCOUNT_ID=19c2ad706ef9998b3c6d9a2acc68a1fd wrangler deploy --env production
 ```
+
+**✅ Latest Deployment Status**:
+- **Worker**: `routing-backend-dev` 
+- **Version ID**: `d120a289-a510-4885-ad3e-bde74941e28d`
+- **Deployed**: 2025-06-30 (Enhanced logging active)
+- **Routes**: `ritualx-dev.ritual-app.co/backend/*` and `/worker-health`
 
 ## Architecture
 
@@ -350,6 +360,77 @@ This documentation preserves context across sessions and ensures continuity.
 4. **Error Monitoring**: Comprehensive 4xx/5xx error tracking with status codes
 5. **Live Monitoring**: Real-time CLI dashboard with automatic refresh
 6. **Environment Switching**: Seamless dev/prod dataset switching
+
+## Enhanced Logging & Monitoring
+
+### Live Request Tracking
+The worker now provides comprehensive console logging for every request:
+
+**Log Format**:
+```
+ROUTING: CF-Ray | Client-IP | Path → BACKEND | Status | Time | Country
+PASSTHROUGH: CF-Ray | Client-IP | Path → FRONTEND | Country  
+FALLBACK: CF-Ray | Client-IP | Path → FRONTEND | ERROR: message
+```
+
+**View Logs**:
+```bash
+# Live tail in terminal
+CLOUDFLARE_ACCOUNT_ID=19c2ad706ef9998b3c6d9a2acc68a1fd wrangler tail routing-backend-dev
+
+# Or view in Cloudflare Dashboard
+# Go to: Workers & Pages → routing-backend-dev → Logs
+```
+
+### Analytics QL Queries
+
+**Request Volume by Route Category**:
+```sql
+SELECT route_category, COUNT(*) as request_count
+FROM routing_metrics_dev 
+WHERE timestamp > datetime('now', '-1 hour')
+GROUP BY route_category
+ORDER BY request_count DESC
+```
+
+**Error Rate Analysis**:
+```sql
+SELECT 
+  response_status,
+  COUNT(*) as error_count,
+  AVG(response_time_ms) as avg_response_time
+FROM routing_metrics_dev 
+WHERE response_status >= 400 
+  AND timestamp > datetime('now', '-1 hour')
+GROUP BY response_status
+ORDER BY error_count DESC
+```
+
+**Geographic Traffic Distribution**:
+```sql
+SELECT 
+  cf_country,
+  cf_colo,
+  COUNT(*) as request_count,
+  AVG(response_time_ms) as avg_response_time
+FROM routing_metrics_dev 
+WHERE timestamp > datetime('now', '-1 hour')
+GROUP BY cf_country, cf_colo
+ORDER BY request_count DESC
+LIMIT 10
+```
+
+**Routing vs Pass-through Analysis**:
+```sql
+SELECT 
+  routed,
+  COUNT(*) as request_count,
+  AVG(response_time_ms) as avg_response_time,
+  COUNT(*) * 100.0 / (SELECT COUNT(*) FROM routing_metrics_dev WHERE timestamp > datetime('now', '-1 hour')) as percentage
+FROM routing_metrics_dev 
+WHERE timestamp > datetime('now', '-1 hour')
+GROUP BY routed
+```
 
 ### Files Modified/Created
 - `src/index.ts`: Enhanced analytics collection with new metrics fields
