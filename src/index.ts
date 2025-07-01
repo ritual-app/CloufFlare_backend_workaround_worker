@@ -200,6 +200,15 @@ export default {
     // Useful for immediate rollback without changing DNS or redeploying worker
     const isRoutingEnabled = env?.ROUTING_ENABLED !== "false";
     if (!isRoutingEnabled) {
+      // Log that routing is disabled
+      console.log(`PASSTHROUGH: ${request.headers.get('cf-ray')} | ${request.headers.get('cf-connecting-ip')} | ${url.pathname} → FRONTEND | ${request.headers.get('cf-country')} | ROUTING_DISABLED`);
+      
+      await logMetrics(env, request, {
+        event_type: 'routing_decision',
+        routed: false,
+        response_status: 200
+      });
+      
       return fetch(request);
     }
 
@@ -217,7 +226,7 @@ export default {
         });
 
         // Log pass-through decision
-        console.log(`PASSTHROUGH: ${request.headers.get('cf-ray')} | ${request.headers.get('cf-connecting-ip')} | ${new URL(request.url).pathname} → FRONTEND | ${request.headers.get('cf-country')}`);
+        console.log(`PASSTHROUGH: ${request.headers.get('cf-ray')} | ${request.headers.get('cf-connecting-ip')} | ${url.pathname} → FRONTEND | ${request.headers.get('cf-country')} | CANARY_PASSTHROUGH`);
         return fetch(request);
       }
 
@@ -269,6 +278,14 @@ export default {
 
     // All other paths: Pass through unchanged to original destination
     // Preserves existing functionality for non-backend routes
+    console.log(`PASSTHROUGH: ${request.headers.get('cf-ray')} | ${request.headers.get('cf-connecting-ip')} | ${url.pathname} → FRONTEND | ${request.headers.get('cf-country')} | NON_BACKEND_PATH`);
+    
+    await logMetrics(env, request, {
+      event_type: 'routing_decision',
+      routed: false,
+      response_status: 200
+    });
+    
     return fetch(request);
   },
 };

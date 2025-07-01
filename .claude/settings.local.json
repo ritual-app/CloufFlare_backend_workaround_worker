@@ -5,7 +5,8 @@
       "Bash(ls:*)",
       "Bash(npm test)",
       "Bash(timeout 10 npm run dashboard:analytics)",
-      "Bash(npm run dashboard:*)"
+      "Bash(npm run dashboard:*)",
+      "Bash(CLOUDFLARE_ACCOUNT_ID=19c2ad706ef9998b3c6d9a2acc68a1fd wrangler secret list)"
     ],
     "deny": []
   }

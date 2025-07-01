@@ -7,6 +7,7 @@
 	"name": "routing-backend",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-06-20",
+	"account_id": "19c2ad706ef9998b3c6d9a2acc68a1fd",
 	"observability": {
 		"enabled": true
 	},

@@ -74,15 +74,29 @@ show_dashboard() {
         echo -e "Backend Response Time: ${BLUE}${backend_time}ms${NC}"
         echo ""
         
-        # Traffic simulation
-        echo -e "${PURPLE}🚦 TRAFFIC SIMULATION${NC}"
+        # Traffic simulation with visual bar
+        echo -e "${PURPLE}🚦 TRAFFIC ROUTING VISIBILITY${NC}"
         if [ "$routing_enabled" = "true" ] && [ "$canary_percent" -gt 0 ]; then
             local routed_requests=$((canary_percent))
             local passthrough_requests=$((100 - canary_percent))
-            echo -e "Requests to Backend: ${GREEN}$routed_requests%${NC}"
-            echo -e "Requests Pass-through: ${BLUE}$passthrough_requests%${NC}"
+            
+            echo -e "Canary Rollout: ${YELLOW}$canary_percent%${NC} → Django Backend"
+            echo -e "Pass-through: ${BLUE}$passthrough_requests%${NC} → RitualX Frontend"
+            
+            # Visual bar representation
+            local bar_length=50
+            local routed_bar_length=$((routed_requests * bar_length / 100))
+            local passthrough_bar_length=$((bar_length - routed_bar_length))
+            
+            printf "Visual: ["
+            printf "${GREEN}%*s${NC}" $routed_bar_length | tr ' ' '█'
+            printf "${BLUE}%*s${NC}" $passthrough_bar_length | tr ' ' '█'
+            printf "]\n"
+            echo -e "        ${GREEN}Django${NC}$(printf "%*s" $((routed_bar_length-6)) "")${BLUE}RitualX${NC}"
         else
-            echo -e "All requests: ${BLUE}Pass-through (no routing)${NC}"
+            echo -e "Status: ${BLUE}All requests pass-through (no routing active)${NC}"
+            printf "Visual: [${BLUE}%50s${NC}]\n" | tr ' ' '█'
+            echo -e "        ${BLUE}All traffic → RitualX Frontend${NC}"
         fi
         
     else
