@@ -18,7 +18,9 @@
 				{ "pattern": "ritualx-dev.ritual-app.co/worker-health", "zone_name": "ritual-app.co" }
 			],
 			"vars": {
-				"ENVIRONMENT": "dev"
+				"ENVIRONMENT": "dev",
+				"CANARY_PERCENT": "100",
+				"ROUTING_ENABLED": "true"
 			},
 			"analytics_engine_datasets": [
 				{
@@ -33,7 +35,9 @@
 				{ "pattern": "ritualx.ritual-app.co/worker-health", "zone_name": "ritual-app.co" }
 			],
 			"vars": {
-				"ENVIRONMENT": "prod"
+				"ENVIRONMENT": "prod",
+				"CANARY_PERCENT": "0",
+				"ROUTING_ENABLED": "true"
 			},
 			"analytics_engine_datasets": [
 				{
