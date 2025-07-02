@@ -9,76 +9,84 @@
 	"compatibility_date": "2025-06-20",
 	"account_id": "19c2ad706ef9998b3c6d9a2acc68a1fd",
 	"observability": {
-		"enabled": true
+		"enabled": true,
 	},
 	"env": {
 		"dev": {
 			"routes": [
-				{ "pattern": "ritualx-dev.ritual-app.co/backend/*", "zone_name": "ritual-app.co" },
-				{ "pattern": "ritualx-dev.ritual-app.co/worker-health", "zone_name": "ritual-app.co" }
+				{
+					"pattern": "ritualx-dev.ritual-app.co/backend/*",
+					"zone_name": "ritual-app.co",
+				},
+				{
+					"pattern": "ritualx-dev.ritual-app.co/worker-health",
+					"zone_name": "ritual-app.co",
+				},
 			],
 			"vars": {
 				"ENVIRONMENT": "dev",
 				"CANARY_PERCENT": "100",
-				"ROUTING_ENABLED": "true"
+				"ROUTING_ENABLED": "true",
 			},
 			"analytics_engine_datasets": [
 				{
 					"binding": "ANALYTICS",
-					"dataset": "routing_metrics_dev"
-				}
-			]
+					"dataset": "routing_metrics_dev",
+				},
+			],
 		},
 		"production": {
 			"routes": [
-				{ "pattern": "ritualx.ritual-app.co/backend/*", "zone_name": "ritual-app.co" },
-				{ "pattern": "ritualx.ritual-app.co/worker-health", "zone_name": "ritual-app.co" }
+				{
+					"pattern": "ritualx.ritual-app.co/backend/*",
+					"zone_name": "ritual-app.co",
+				},
+				{
+					"pattern": "ritualx.ritual-app.co/worker-health",
+					"zone_name": "ritual-app.co",
+				},
 			],
 			"vars": {
 				"ENVIRONMENT": "prod",
 				"CANARY_PERCENT": "0",
-				"ROUTING_ENABLED": "true"
+				"ROUTING_ENABLED": "true",
 			},
 			"analytics_engine_datasets": [
 				{
 					"binding": "ANALYTICS",
-					"dataset": "routing_metrics_prod"
-				}
-			]
-		}
-	}
+					"dataset": "routing_metrics_prod",
+				},
+			],
+		},
+	},
 	/**
-	 * Smart Placement
-	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
-	 */
+   * Smart Placement
+   * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
+   */
 	// "placement": { "mode": "smart" },
-
 	/**
-	 * Bindings
-	 * Bindings allow your Worker to interact with resources on the Cloudflare Developer Platform, including
-	 * databases, object storage, AI inference, real-time communication and more.
-	 * https://developers.cloudflare.com/workers/runtime-apis/bindings/
-	 */
-
+   * Bindings
+   * Bindings allow your Worker to interact with resources on the Cloudflare Developer Platform, including
+   * databases, object storage, AI inference, real-time communication and more.
+   * https://developers.cloudflare.com/workers/runtime-apis/bindings/
+   */
 	/**
-	 * Environment Variables
-	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
-	 */
+   * Environment Variables
+   * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
+   */
 	// "vars": { "MY_VARIABLE": "production_value" },
 	/**
-	 * Note: Use secrets to store sensitive data.
-	 * https://developers.cloudflare.com/workers/configuration/secrets/
-	 */
-
+   * Note: Use secrets to store sensitive data.
+   * https://developers.cloudflare.com/workers/configuration/secrets/
+   */
 	/**
-	 * Static Assets
-	 * https://developers.cloudflare.com/workers/static-assets/binding/
-	 */
+   * Static Assets
+   * https://developers.cloudflare.com/workers/static-assets/binding/
+   */
 	// "assets": { "directory": "./public/", "binding": "ASSETS" },
-
 	/**
-	 * Service Bindings (communicate between multiple Workers)
-	 * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings
-	 */
+   * Service Bindings (communicate between multiple Workers)
+   * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings
+   */
 	// "services": [{ "binding": "MY_SERVICE", "service": "my-service" }]
 }

@@ -2,6 +2,46 @@
 
 This is a Cloudflare Worker project named "routing-backend" that serves as an HTTP proxy router. The worker intercepts requests to `ritualx-dev.ritual-app.co` and routes `/backend/*` paths to `management-dev.ritual-app.co` while preserving all other request properties.
 
+## Prerequisites
+
+### Cloudflare API Authentication
+
+**Required for deployment and management operations.**
+
+1. **Get your Cloudflare API Token**:
+   - Go to [Cloudflare Dashboard](https://dash.cloudflare.com/profile/api-tokens)
+   - Click "Create Token" → Use "Edit Cloudflare Workers" template
+   - **Zone Resources**: Include `ritual-app.co`
+   - **Account Resources**: Include your account
+   - Copy the generated token
+
+2. **Set up authentication** (choose one method):
+
+   **Option A: Environment Variable (Recommended)**
+   ```bash
+   export CLOUDFLARE_API_TOKEN="your-token-here"
+   ```
+
+   **Option B: Wrangler Login**
+   ```bash
+   wrangler login
+   # Follow browser prompt to authenticate
+   ```
+
+   **Option C: Config File**
+   ```bash
+   # Create ~/.wrangler/config/default.toml
+   api_token = "your-token-here"
+   ```
+
+3. **Verify authentication**:
+   ```bash
+   wrangler whoami
+   # Should show your email and account details
+   ```
+
+**🔐 Security Note**: Never commit API tokens to version control. Use environment variables or secure config files.
+
 ## Development Commands
 
 **Development & Testing**:
@@ -15,11 +55,23 @@ npm run cf-typegen   # Generate Cloudflare Worker types
 **Deployment**:
 ```bash
 npm run deploy:dev   # Deploy to dev environment (routing-backend-dev)
-npm run deploy:prod  # Deploy to production (routing-backend)
+npm run deploy:prod  # Deploy to production (routing-backend-production)
 
-# Direct wrangler commands
+# Direct wrangler commands (if using CLOUDFLARE_ACCOUNT_ID env var)
 CLOUDFLARE_ACCOUNT_ID=19c2ad706ef9998b3c6d9a2acc68a1fd wrangler deploy --env dev
 CLOUDFLARE_ACCOUNT_ID=19c2ad706ef9998b3c6d9a2acc68a1fd wrangler deploy --env production
+```
+
+**Monitoring & Management**:
+```bash
+npm run dashboard:dev     # Real-time dev environment dashboard
+npm run dashboard:prod    # Real-time prod environment dashboard
+npm run canary:dev:0      # Set dev canary to 0% (edit config & redeploy)
+npm run canary:dev:50     # Set dev canary to 50%
+npm run canary:dev:100    # Set dev canary to 100%
+npm run canary:prod:0     # Set prod canary to 0%
+npm run canary:prod:50    # Set prod canary to 50%
+npm run canary:prod:100   # Set prod canary to 100%
 ```
 
 **✅ Latest Deployment Status**:
