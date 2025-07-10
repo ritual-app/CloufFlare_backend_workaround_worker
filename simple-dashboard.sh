@@ -13,15 +13,25 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 # Configuration
-WORKER_URL="https://ritualx-dev.ritual-app.co"
+WORKER_URL="${WORKER_URL:-https://ritualx-dev.ritual-app.co}"
 REFRESH_INTERVAL=5
+
+# Determine environment from URL
+if [[ "$WORKER_URL" == *"-dev."* ]]; then
+    ENV_NAME="DEV"
+    ENV_COLOR="${YELLOW}"
+else
+    ENV_NAME="PROD"
+    ENV_COLOR="${RED}"
+fi
 
 show_dashboard() {
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     
     clear
     echo -e "${CYAN}═══════════════════════════════════════════════════════════════${NC}"
-    echo -e "${CYAN}🚀 WORKER HEALTH DASHBOARD - $timestamp${NC}"
+    echo -e "${CYAN}🚀 WORKER HEALTH DASHBOARD [${ENV_COLOR}$ENV_NAME${CYAN}] - $timestamp${NC}"
+    echo -e "${CYAN}URL: $WORKER_URL${NC}"
     echo -e "${CYAN}═══════════════════════════════════════════════════════════════${NC}"
     
     # Get health data
@@ -135,7 +145,7 @@ test_requests() {
 }
 
 # Main loop
-echo -e "${GREEN}🚀 Starting Worker Health Dashboard...${NC}"
+echo -e "${GREEN}🚀 Starting Worker Health Dashboard [${ENV_COLOR}$ENV_NAME${GREEN}]...${NC}"
 echo -e "${BLUE}Monitor URL: $WORKER_URL${NC}"
 
 while true; do
