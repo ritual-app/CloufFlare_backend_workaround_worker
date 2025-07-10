@@ -32,10 +32,10 @@ curl https://management.ritual-app.co/v1/experts/
 ### 2. Deploy to Production Environment
 ```bash
 # Deploy to production environment
-CLOUDFLARE_ACCOUNT_ID=19c2ad706ef9998b3c6d9a2acc68a1fd wrangler deploy --env production
+npm run deploy:prod
 
 # Verify deployment
-CLOUDFLARE_ACCOUNT_ID=19c2ad706ef9998b3c6d9a2acc68a1fd wrangler deployments list --env production
+wrangler deployments list --env production
 ```
 
 ### 3. DNS Configuration
@@ -48,10 +48,10 @@ Cloudflare Dashboard → DNS → ritualx.ritual-app.co
 ```
 
 ### 4. Environment Variables
-Set in Cloudflare Dashboard for production environment:
+Set using npm scripts for production environment:
 ```bash
-ROUTING_ENABLED=true      # Master toggle
-CANARY_PERCENT=0          # Start with 0% (gradual rollout)
+npm run enable:prod       # Set ROUTING_ENABLED=true
+npm run canary:prod:0     # Set CANARY_PERCENT=0 (gradual rollout)
 ```
 
 ## Production Testing
@@ -59,7 +59,7 @@ CANARY_PERCENT=0          # Start with 0% (gradual rollout)
 ### 1. Pre-Deployment Verification
 ```bash
 # Health check (should work regardless of routing)
-curl https://ritualx.ritual-app.co/worker-health
+npm run health:prod
 
 # Backend routing test (with CANARY_PERCENT=0, should pass through)
 curl https://ritualx.ritual-app.co/backend/health_check
@@ -73,25 +73,28 @@ curl https://ritualx.ritual-app.co/
 ### 2. Gradual Rollout
 ```bash
 # Step 1: 0% canary (no routing impact)
-CANARY_PERCENT=0
+npm run canary:prod:0
 
 # Step 2: 5% canary (low risk testing)
-CANARY_PERCENT=5
+npm run canary:prod:5
 
 # Step 3: 25% canary (moderate testing)
-CANARY_PERCENT=25
+npm run canary:prod:25
 
 # Step 4: 100% canary (full migration)
-CANARY_PERCENT=100
+npm run canary:prod:100
 ```
 
 ### 3. Monitoring During Rollout
 ```bash
 # Critical health check (should always work)
-curl -f https://ritualx.ritual-app.co/worker-health
+npm run health:prod
 
-# Monitor error rates and response times
-# Watch for any 5xx errors or timeouts
+# Live production dashboard
+npm run dashboard:prod
+
+# Check environment variables
+npm run vars:prod
 ```
 
 ## Rollback Procedures
@@ -99,19 +102,19 @@ curl -f https://ritualx.ritual-app.co/worker-health
 ### 1. Immediate Rollback (Emergency)
 ```bash
 # Option 1: Disable routing completely
-# Set ROUTING_ENABLED=false in Cloudflare dashboard
+npm run disable:prod
 
 # Option 2: DNS rollback (fastest)
 # Change ritualx.ritual-app.co to grey cloud (DNS only)
 
 # Option 3: Canary rollback
-# Set CANARY_PERCENT=0
+npm run canary:prod:0
 ```
 
 ### 2. Worker Rollback
 ```bash
 # Rollback to previous worker version
-CLOUDFLARE_ACCOUNT_ID=19c2ad706ef9998b3c6d9a2acc68a1fd wrangler rollback --env production
+wrangler rollback --env production
 ```
 
 ## Production Routes Configuration

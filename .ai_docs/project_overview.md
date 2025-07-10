@@ -61,16 +61,21 @@ Client → DNS (grey cloud) → GCP CDN (34.160.18.209) → ritualx-dev app
 
 **Control Commands**:
 ```bash
-# Check current variables
-CLOUDFLARE_ACCOUNT_ID=19c2ad706ef9998b3c6d9a2acc68a1fd wrangler secret list --env dev
+# Check current variables (plaintext - safe to view)
+npm run vars:dev          # Show dev environment variables
+npm run vars:prod         # Show prod environment variables
 
 # Change canary percentage (0=no routing, 100=full routing)
-npm run canary:0   # Disable routing
-npm run canary:50  # 50% traffic
-npm run canary:100 # Full routing
+npm run canary:dev:0      # Disable dev routing
+npm run canary:dev:50     # 50% dev traffic
+npm run canary:dev:100    # Full dev routing
+npm run canary:prod:0     # Disable prod routing
+npm run canary:prod:50    # 50% prod traffic
+npm run canary:prod:100   # Full prod routing
 
-# Emergency disable
-echo "false" | CLOUDFLARE_ACCOUNT_ID=19c2ad706ef9998b3c6d9a2acc68a1fd wrangler secret put ROUTING_ENABLED --env dev
+# Emergency disable (plaintext environment variables)
+npm run disable:dev       # Emergency disable dev routing
+npm run disable:prod      # Emergency disable prod routing
 ```
 
 ### Route Configuration
@@ -93,17 +98,17 @@ echo "false" | CLOUDFLARE_ACCOUNT_ID=19c2ad706ef9998b3c6d9a2acc68a1fd wrangler s
 
 ## Deployment Commands
 ```bash
-# Deploy to dev environment (current)
-npm run deploy:dev
-
-# Deploy to production (future)
-npm run deploy:prod
+# Deploy to environments
+npm run deploy:dev        # Deploy to dev environment
+npm run deploy:prod       # Deploy to production environment
 
 # Check deployments
-CLOUDFLARE_ACCOUNT_ID=19c2ad706ef9998b3c6d9a2acc68a1fd wrangler deployments list --env dev
+wrangler deployments list --env dev
+wrangler deployments list --env production
 
 # Rollback if needed
-CLOUDFLARE_ACCOUNT_ID=19c2ad706ef9998b3c6d9a2acc68a1fd wrangler rollback --env dev
+wrangler rollback --env dev
+wrangler rollback --env production
 ```
 
 ## Analytics & Monitoring

@@ -54,24 +54,41 @@ npm run cf-typegen   # Generate Cloudflare Worker types
 
 **Deployment**:
 ```bash
-npm run deploy:dev   # Deploy to dev environment (routing-backend-dev)
-npm run deploy:prod  # Deploy to production (routing-backend-production)
+npm run deploy:dev   # Deploy to dev environment (ritualx-dev.ritual-app.co)
+npm run deploy:prod  # Deploy to production environment (ritualx.ritual-app.co)
 
-# Direct wrangler commands (if using CLOUDFLARE_ACCOUNT_ID env var)
-CLOUDFLARE_ACCOUNT_ID=19c2ad706ef9998b3c6d9a2acc68a1fd wrangler deploy --env dev
-CLOUDFLARE_ACCOUNT_ID=19c2ad706ef9998b3c6d9a2acc68a1fd wrangler deploy --env production
+# Direct wrangler commands (if needed)
+wrangler deploy --env dev        # Deploy to dev
+wrangler deploy --env production # Deploy to prod
 ```
 
 **Monitoring & Management**:
 ```bash
-npm run dashboard:dev     # Real-time dev environment dashboard
-npm run dashboard:prod    # Real-time prod environment dashboard
-npm run canary:dev:0      # Set dev canary to 0% (edit config & redeploy)
-npm run canary:dev:50     # Set dev canary to 50%
-npm run canary:dev:100    # Set dev canary to 100%
-npm run canary:prod:0     # Set prod canary to 0%
-npm run canary:prod:50    # Set prod canary to 50%
-npm run canary:prod:100   # Set prod canary to 100%
+# Real-time dashboards
+npm run dashboard:dev     # Live dev environment analytics dashboard
+npm run dashboard:prod    # Live production environment analytics dashboard
+
+# Environment variable management (plaintext - safe to view)
+npm run vars:dev          # Show current dev environment variables
+npm run vars:prod         # Show current prod environment variables
+
+# Canary traffic control (gradual rollout)
+npm run canary:dev:0      # Set dev to 0% routing (safe mode)
+npm run canary:dev:50     # Set dev to 50% routing
+npm run canary:dev:100    # Set dev to 100% routing (full)
+npm run canary:prod:0     # Set prod to 0% routing (safe mode) 
+npm run canary:prod:50    # Set prod to 50% routing
+npm run canary:prod:100   # Set prod to 100% routing (full)
+
+# Health checks
+npm run health:dev        # Check dev worker health status
+npm run health:prod       # Check prod worker health status
+
+# Emergency controls
+npm run disable:dev       # Emergency disable dev routing (ROUTING_ENABLED=false)
+npm run disable:prod      # Emergency disable prod routing (ROUTING_ENABLED=false)
+npm run enable:dev        # Re-enable dev routing (ROUTING_ENABLED=true)
+npm run enable:prod       # Re-enable prod routing (ROUTING_ENABLED=true)
 ```
 
 **✅ Latest Deployment Status**:
@@ -136,14 +153,17 @@ The worker implements selective path-based routing:
 
 ### Essential Commands
 ```bash
-# Health check (critical alert)
-curl -f https://ritualx-dev.ritual-app.co/worker-health
+# Health checks (critical alerts)
+npm run health:dev        # Dev worker health check
+npm run health:prod       # Prod worker health check
 
 # Deploy
-CLOUDFLARE_ACCOUNT_ID=19c2ad706ef9998b3c6d9a2acc68a1fd wrangler deploy
+npm run deploy:dev        # Deploy to dev
+npm run deploy:prod       # Deploy to prod
 
-# Emergency disable
-echo "false" | CLOUDFLARE_ACCOUNT_ID=19c2ad706ef9998b3c6d9a2acc68a1fd wrangler secret put ROUTING_ENABLED --env=""
+# Emergency disable (plaintext environment variables)
+npm run disable:dev       # Emergency disable dev routing
+npm run disable:prod      # Emergency disable prod routing
 ```
 
 ## Error Handling & Monitoring
